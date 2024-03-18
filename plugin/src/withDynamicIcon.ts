@@ -16,9 +16,8 @@ import path from "path";
 import pbxFile from "xcode/lib/pbxFile";
 
 const {
-  addMetaDataItemToMainApplication,
   getMainApplicationOrThrow,
-  addUsesLibraryItemToMainApplication,
+  getMainActivityOrThrow,
 } = AndroidConfig.Manifest;
 
 const androidFolderPath = ["app", "src", "main", "res"];
@@ -80,6 +79,7 @@ const withDynamicIcon: ConfigPlugin<string[] | IconSet | void> = (
 const withIconAndroidManifest: ConfigPlugin<Props> = (config, { icons }) => {
   return withAndroidManifest(config, (config) => {
     const mainApplication: any = getMainApplicationOrThrow(config.modResults);
+    const mainActivity = getMainActivityOrThrow(config.modResults);
 
     const iconNamePrefix = `${config.android!.package}.MainActivity`;
     const iconNames = Object.keys(icons);
@@ -95,14 +95,14 @@ const withIconAndroidManifest: ConfigPlugin<Props> = (config, { icons }) => {
             "android:icon": `@mipmap/${iconName}`,
             "android:targetActivity": ".MainActivity",
           },
-          "intent-filter": [
+          "intent-filter": [...mainActivity["intent-filter"] || [
             {
               action: [{ $: { "android:name": "android.intent.action.MAIN" } }],
               category: [
                 { $: { "android:name": "android.intent.category.LAUNCHER" } },
               ],
             },
-          ],
+          ]]
         })),
       ];
     }
